@@ -92,7 +92,7 @@ class 类_记录引擎(基础引擎):
         策略实例 = self.所有策略[策略名称]
         self.策略配置[策略名称] = {
             "class_name": 策略实例.__class__.__name__,
-            "vt_symbol": 策略实例.合约标识,
+            "vt_symbol": 策略实例.合约_交易所,
             "setting": 配置字典,
         }
         保存json文件(self.配置文件名, self.策略配置)
@@ -133,40 +133,40 @@ class 类_记录引擎(基础引擎):
         # 合并两个字典的键，避免重复处理
         所有合约键 = set(self.k线记录字典.keys()) | set(self.tick记录字典.keys())
 
-        for 代码_交易所 in 所有合约键:
+        for 合约_交易所 in 所有合约键:
             # 检查是否为本地数据
-            if 类_交易所.本地数据.value not in 代码_交易所:
+            if 类_交易所.本地数据.value not in 合约_交易所:
                 # 非本地数据合约需要订阅
-                合约: Optional[类_合约数据] = self.主引擎.获取合约详情(代码_交易所)
+                合约: Optional[类_合约数据] = self.主引擎.获取合约详情(合约_交易所)
                 if not 合约:
-                    self.记录日志(f"找不到合约：{代码_交易所}")
+                    self.记录日志(f"找不到合约：{合约_交易所}")
                     continue  # 继续处理其他合约，而不是直接返回
 
                 self.订阅合约(合约)
             else:
                 # 本地数据合约初始化字典
-                self.k线记录字典[代码_交易所] = {}
-                self.tick记录字典[代码_交易所] = {}
+                self.k线记录字典[合约_交易所] = {}
+                self.tick记录字典[合约_交易所] = {}
 
     def 启动主力合约采集(self, tick记录 = True, K线记录 = True, 交易所名称: str = "全部"):
         主力合约列表 = 处理合约信息(交易所名称)
 
-        for 代码_交易所 in 主力合约列表:
-            if 类_交易所.本地数据.value not in 代码_交易所:
+        for 合约_交易所 in 主力合约列表:
+            if 类_交易所.本地数据.value not in 合约_交易所:
                 # 非本地数据合约需要订阅
-                合约: Optional[类_合约数据] = self.主引擎.获取合约详情(代码_交易所)
+                合约: Optional[类_合约数据] = self.主引擎.获取合约详情(合约_交易所)
                 if not 合约:
-                    self.记录日志(f"找不到合约：{代码_交易所}")
+                    self.记录日志(f"找不到合约：{合约_交易所}")
                     continue  # 继续处理其他合约，而不是直接返回
 
                 if tick记录:
-                    self.tick记录字典[代码_交易所] = {
+                    self.tick记录字典[合约_交易所] = {
                         "合约代码": 合约.代码,
                         "交易所": 合约.交易所.value,
                         "网关名称": 合约.网关名称
                     }
                 if K线记录:
-                    self.k线记录字典[代码_交易所] = {
+                    self.k线记录字典[合约_交易所] = {
                         "合约代码": 合约.代码,
                         "交易所": 合约.交易所.value,
                         "网关名称": 合约.网关名称
@@ -176,93 +176,93 @@ class 类_记录引擎(基础引擎):
 
             else:
                 # 本地数据合约初始化字典
-                self.k线记录字典[代码_交易所] = {}
-                self.tick记录字典[代码_交易所] = {}
+                self.k线记录字典[合约_交易所] = {}
+                self.tick记录字典[合约_交易所] = {}
 
     def 清理过期自选合约(self) -> None:
         # 合并两个字典的键，避免重复处理
         所有合约键 = set(self.k线记录字典.keys()) | set(self.tick记录字典.keys())
 
-        for 代码_交易所 in 所有合约键:
+        for 合约_交易所 in 所有合约键:
             # 检查是否为本地数据
-            if 类_交易所.本地数据.value not in 代码_交易所:
+            if 类_交易所.本地数据.value not in 合约_交易所:
                 # 非本地数据合约需要订阅
-                合约: Optional[类_合约数据] = self.主引擎.获取合约详情(代码_交易所)
+                合约: Optional[类_合约数据] = self.主引擎.获取合约详情(合约_交易所)
                 if not 合约:
-                    self.记录日志(f"存在过期合约：{代码_交易所}，开始进行移除")
-                    self.移除自选Tick合约(代码_交易所)
-                    self.移除自选K线合约(代码_交易所)
+                    self.记录日志(f"存在过期合约：{合约_交易所}，开始进行移除")
+                    self.移除自选Tick合约(合约_交易所)
+                    self.移除自选K线合约(合约_交易所)
                     continue  # 继续处理其他合约，而不是直接返回
 
-    def 添加自选K线合约(self, 代码_交易所: str) -> None:
+    def 添加自选K线合约(self, 合约_交易所: str) -> None:
         """添加K线记录"""
-        if 代码_交易所 in self.k线记录字典:
-            self.记录日志(f"已在K线记录列表中：{代码_交易所}")
+        if 合约_交易所 in self.k线记录字典:
+            self.记录日志(f"已在K线记录列表中：{合约_交易所}")
 
-        if 类_交易所.本地数据.value not in 代码_交易所:
-            合约: Optional[类_合约数据] = self.主引擎.获取合约详情(代码_交易所)
+        if 类_交易所.本地数据.value not in 合约_交易所:
+            合约: Optional[类_合约数据] = self.主引擎.获取合约详情(合约_交易所)
             if not 合约:
-                self.记录日志(f"找不到合约：{代码_交易所}")
+                self.记录日志(f"找不到合约：{合约_交易所}")
                 return
 
-            self.k线记录字典[代码_交易所] = {
+            self.k线记录字典[合约_交易所] = {
                 "合约代码": 合约.代码,
                 "交易所": 合约.交易所.value,
                 "网关名称": 合约.网关名称
             }
             self.订阅合约(合约)
         else:
-            self.k线记录字典[代码_交易所] = {}
+            self.k线记录字典[合约_交易所] = {}
 
         self.保存配置()
         self.发送更新事件()
-        self.记录日志(f"添加K线记录成功：{代码_交易所}")
+        self.记录日志(f"添加K线记录成功：{合约_交易所}")
 
-    def 添加自选Tick合约(self, 代码_交易所: str) -> None:
+    def 添加自选Tick合约(self, 合约_交易所: str) -> None:
         """添加Tick记录"""
-        if 代码_交易所 in self.tick记录字典:
-            self.记录日志(f"已在Tick记录列表中：{代码_交易所}")
+        if 合约_交易所 in self.tick记录字典:
+            self.记录日志(f"已在Tick记录列表中：{合约_交易所}")
 
-        if 类_交易所.本地数据.value not in 代码_交易所:
-            合约: Optional[类_合约数据] = self.主引擎.获取合约详情(代码_交易所)
+        if 类_交易所.本地数据.value not in 合约_交易所:
+            合约: Optional[类_合约数据] = self.主引擎.获取合约详情(合约_交易所)
             if not 合约:
-                self.记录日志(f"找不到合约：{代码_交易所}")
+                self.记录日志(f"找不到合约：{合约_交易所}")
                 return
 
-            self.tick记录字典[代码_交易所] = {
+            self.tick记录字典[合约_交易所] = {
                 "合约代码": 合约.代码,
                 "交易所": 合约.交易所.value,
                 "网关名称": 合约.网关名称
             }
             self.订阅合约(合约)
         else:
-            self.tick记录字典[代码_交易所] = {}
+            self.tick记录字典[合约_交易所] = {}
 
         self.保存配置()
         self.发送更新事件()
-        self.记录日志(f"添加Tick记录成功：{代码_交易所}")
+        self.记录日志(f"添加Tick记录成功：{合约_交易所}")
 
-    def 移除自选K线合约(self, 代码_交易所: str) -> None:
+    def 移除自选K线合约(self, 合约_交易所: str) -> None:
         """移除K线记录"""
-        if 代码_交易所 not in self.k线记录字典:
-            self.记录日志(f"不在K线记录列表中：{代码_交易所}")
+        if 合约_交易所 not in self.k线记录字典:
+            self.记录日志(f"不在K线记录列表中：{合约_交易所}")
             return
 
-        self.k线记录字典.pop(代码_交易所)
+        self.k线记录字典.pop(合约_交易所)
         self.保存配置()
         self.发送更新事件()
-        self.记录日志(f"移除K线记录成功：{代码_交易所}")
+        self.记录日志(f"移除K线记录成功：{合约_交易所}")
 
-    def 移除自选Tick合约(self, 代码_交易所: str) -> None:
+    def 移除自选Tick合约(self, 合约_交易所: str) -> None:
         """移除Tick记录"""
-        if 代码_交易所 not in self.tick记录字典:
-            self.记录日志(f"不在Tick记录列表中：{代码_交易所}")
+        if 合约_交易所 not in self.tick记录字典:
+            self.记录日志(f"不在Tick记录列表中：{合约_交易所}")
             return
 
-        self.tick记录字典.pop(代码_交易所)
+        self.tick记录字典.pop(合约_交易所)
         self.保存配置()
         self.发送更新事件()
-        self.记录日志(f"移除Tick记录成功：{代码_交易所}")
+        self.记录日志(f"移除Tick记录成功：{合约_交易所}")
 
     def 注册事件(self) -> None:
         """注册事件监听"""
@@ -279,14 +279,14 @@ class 类_记录引擎(基础引擎):
         tick时间差 = abs(tick.时间戳 - self.过滤时间)
 
         if abs(tick时间差) >= self.时间差:
-            print(f'进入更新Tick数据，空判断，{tick.代码_交易所}')
+            print(f'进入更新Tick数据，空判断，{tick.合约_交易所}')
             return
 
-        if tick.代码_交易所 in self.tick记录字典:
+        if tick.合约_交易所 in self.tick记录字典:
             self.记录Tick(copy(tick))
 
-        if tick.代码_交易所 in self.k线记录字典:
-            k线生成器: 类_K线生成器 = self.获取k线生成器(tick.代码_交易所)
+        if tick.合约_交易所 in self.k线记录字典:
+            k线生成器: 类_K线生成器 = self.获取k线生成器(tick.合约_交易所)
             k线生成器.更新Tick(copy(tick))
 
     def 处理定时事件(self, 事件: 类_事件) -> None:
@@ -364,20 +364,20 @@ class 类_记录引擎(基础引擎):
 
     def 记录Tick(self, tick数据: 类_行情数据) -> None:
         """记录Tick数据到缓存"""
-        self.tick缓存[tick数据.代码_交易所].append(tick数据)
+        self.tick缓存[tick数据.合约_交易所].append(tick数据)
 
     def 记录K线(self, k线数据: 类_K线数据) -> None:
         """记录K线数据到缓存"""
         # self.记录日志(f'K线：{k线数据}')
-        self.k线缓存[k线数据.代码_交易所].append(k线数据)
+        self.k线缓存[k线数据.合约_交易所].append(k线数据)
 
-    def 获取k线生成器(self, 代码_交易所: str) -> 类_K线生成器:
+    def 获取k线生成器(self, 合约_交易所: str) -> 类_K线生成器:
         """获取K线生成器"""
-        生成器: Optional[类_K线生成器] = self.k线生成器字典.get(代码_交易所, None)
+        生成器: Optional[类_K线生成器] = self.k线生成器字典.get(合约_交易所, None)
 
         if not 生成器:
             生成器 = 类_K线生成器(self.记录K线)
-            self.k线生成器字典[代码_交易所] = 生成器
+            self.k线生成器字典[合约_交易所] = 生成器
 
         return 生成器
 
